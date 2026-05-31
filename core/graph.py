@@ -1,13 +1,17 @@
+import os
+from dotenv import load_dotenv
 from langgraph.graph import StateGraph, START, END
 from typing import TypedDict
-from unittest.mock import MagicMock
 from agents.triage import TriageAgent
 from agents.log import LogAgent
 from agents.doc import DocAgent
 from agents.response import ResponseAgent
 from agents.escalation import EscalationAgent
 from core.message import Message
-
+from core.model_adapter import MimoAdapter
+from core.message_bus import MessageBus
+from core.knowledge_store import MockStore
+load_dotenv()
 class AgentState(TypedDict):
     message: str
     intent: str
@@ -17,15 +21,16 @@ class AgentState(TypedDict):
 
 graph = StateGraph(AgentState)
 
-mock_adapter = MagicMock()
-mock_bus = MagicMock()
-mock_store = MagicMock()
+api_key = os.getenv("MIMO_API_KEY")
+adapter = MimoAdapter(api_key=api_key, model="mimo-v2.5-pro")
+bus = MessageBus()
+store = MockStore()
 
-triage_agent = TriageAgent(mock_adapter, mock_bus, mock_store)
-log_agent = LogAgent(mock_adapter, mock_bus, mock_store)
-doc_agent = DocAgent(mock_adapter, mock_bus, mock_store)
-response_agent = ResponseAgent(mock_adapter, mock_bus, mock_store)
-escalation_agent = EscalationAgent(mock_adapter, mock_bus, mock_store)
+triage_agent = TriageAgent(adapter, bus, store)
+log_agent = LogAgent(adapter, bus, store)
+doc_agent = DocAgent(adapter, bus, store)
+response_agent = ResponseAgent(adapter, bus, store)
+escalation_agent = EscalationAgent(adapter, bus, store)
 
 def triage_node(state):
     msg = Message(sender="user", receiver="triage", type="question", content=state["message"])
