@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 class KnowledgeStore(ABC):
     @abstractmethod
     def store(self, content, doc_type, doc_id, name):
