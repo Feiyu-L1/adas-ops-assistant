@@ -9,10 +9,10 @@ class ModelAdapter(ABC):
         pass
 
 class MimoAdapter(ModelAdapter):
-    def __init__(self, api_key, model):
+    def __init__(self, api_key, model, base_url="https://token-plan-sgp.xiaomimimo.com/v1"):
         self.client = OpenAI(
             api_key = api_key,
-            base_url = "https://api.xiaomimimo.com/v1"
+            base_url = base_url
         )
         self.model = model
     
