@@ -11,7 +11,9 @@ from core.message import Message
 from core.model_adapter import MimoAdapter
 from core.message_bus import MessageBus
 from core.knowledge_store import MockStore
+from config import get_triage_adapter, get_adapter
 load_dotenv()
+
 class AgentState(TypedDict):
     message: str
     intent: str
@@ -22,11 +24,12 @@ class AgentState(TypedDict):
 graph = StateGraph(AgentState)
 
 api_key = os.getenv("MIMO_API_KEY")
-adapter = MimoAdapter(api_key=api_key, model="mimo-v2.5-pro")
+triage_adapter = get_triage_adapter()
+adapter = get_adapter()
 bus = MessageBus()
 store = MockStore()
 
-triage_agent = TriageAgent(adapter, bus, store)
+triage_agent = TriageAgent(triage_adapter, bus, store)
 log_agent = LogAgent(adapter, bus, store)
 doc_agent = DocAgent(adapter, bus, store)
 response_agent = ResponseAgent(adapter, bus, store)
