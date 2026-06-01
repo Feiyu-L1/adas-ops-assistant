@@ -27,5 +27,11 @@ class ResponseAgent(Agent):
     def process(self, message):
         prompt = message.content
         result = self.model_adapter.chat(prompt, SYSTEM_PROMPT)
-        data = json.loads(result)
-        return data
+        try:
+            data = json.loads(result)
+            return data
+        except json.JSONDecodeError:
+            return {
+                "thinking": "LLM 返回格式错误",
+                "report": result
+            }
