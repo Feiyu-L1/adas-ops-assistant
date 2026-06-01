@@ -14,6 +14,12 @@ if user_input:
         "message": user_input,
         "history": st.session_state.history
     })
+    
+    if "thinking" in result:
+            for agent, thought in result["thinking"].items():
+                with st.expander(f"🤔 {agent} Agent 思考过程"):
+                    st.write(thought)
+                    
     st.write("### 意图分类")
     st.write(result["intent"])
 
@@ -34,5 +40,5 @@ if user_input:
 
     st.session_state.history.append({"role": "user", "content": user_input})
     st.session_state.history.append({"role": "assistant", "content": result["analysis"]})
-    
+
     

@@ -18,6 +18,7 @@ class AgentState(TypedDict):
     message: str
     history: list 
     intent: str
+    thinking: dict
     analysis: str
     report: str
     escalation: str
@@ -40,28 +41,28 @@ def triage_node(state):
     history_text = "\n".join([f"{m['role']}: {m['content']}" for m in state["history"]])
     prompt = f"历史对话：\n{history_text}\n\n当前问题：{state['message']}"
     msg = Message(sender="user", receiver="triage", type="question", content=prompt)
-    result = triage_agent.process(msg)
-    return {"intent": result}
+    data = triage_agent.process(msg)
+    return {"intent": data["intent"], "thinking": {"triage": data["thinking"]}}
 
 def log_node(state):
     msg = Message(sender="user", receiver="log", type="analysis", content=state["message"])
-    result = log_agent.process(msg)
-    return {"analysis": result}
+    data = log_agent.process(msg)
+    return {"analysis": data, "thinking": {"log": data["thinking"]}}
 
 def doc_node(state):
     msg = Message(sender="user", receiver="doc", type="analysis", content=state["message"])
-    result = doc_agent.process(msg)
-    return {"analysis": result}
+    data = doc_agent.process(msg)
+    return {"analysis": data["answer"], "thinking": {"doc": data["thinking"]}}
 
 def response_node(state):
     msg = Message(sender="user", receiver="response", type="report", content=state["analysis"])
-    result = response_agent.process(msg)
-    return {"report": result}
+    data = response_agent.process(msg)
+    return {"report": data["report"], "thinking": {"response": data["thinking"]}}
 
 def escalation_node(state):
     msg = Message(sender="user", receiver="escalation", type="report", content=state["report"])
-    result = escalation_agent.process(msg)
-    return {"escalation": result}
+    data = escalation_agent.process(msg)
+    return {"escalation": data["escalation"], "thinking": {"escalation": data["thinking"]}}
 
 graph.add_node("triage", triage_node)
 graph.add_node("log", log_node)

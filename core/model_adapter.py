@@ -22,7 +22,7 @@ class MimoAdapter(ModelAdapter):
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}],
-            max_completion_tokens=1024,
+            max_completion_tokens=2048,
             temperature=1.0,
             top_p=0.95,
             stream=False

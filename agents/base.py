@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import json
 
 class Agent(ABC):
     # Initialize the agent
