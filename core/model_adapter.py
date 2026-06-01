@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod 
 import os
 from openai import OpenAI
+import time
+import json
 
 class ModelAdapter(ABC):
 
@@ -17,15 +19,28 @@ class MimoAdapter(ModelAdapter):
         self.model = model
     
     def chat(self, prompt,system_prompt="你是一个AI助手"):
-        completion = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}],
-            max_completion_tokens=2048,
-            temperature=1.0,
-            top_p=0.95,
-            stream=False
-        )
-        return completion.choices[0].message.content
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                completion = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}],
+                    max_completion_tokens=2048,
+                    temperature=1.0,
+                    top_p=0.95,
+                    stream=False
+            )
+                return completion.choices[0].message.content
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    time.sleep(1)  # 等待 1 秒后重试
+                    continue
+                else:
+                    return json.dumps({
+                    "thinking": f"API调用失败: {str(e)}",
+                    "intent": "未知",
+                    "answer": "抱歉，系统暂时无法处理您的请求，请稍后再试。"
+                })
       
