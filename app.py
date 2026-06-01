@@ -21,8 +21,8 @@ if user_input:
     else:
         st.write("### 文档回答")
         st.write(result["analysis"])
-        
-    if result["escalation"] == "需要升级":
+
+    if result.get("escalation") == "需要升级":
         st.write("### ⚠️ 升级判断")
         st.write("需要人工介入")
     

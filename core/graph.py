@@ -74,7 +74,7 @@ def route_by_intent(state):
         return "doc"
 graph.add_conditional_edges("triage", route_by_intent)
 graph.add_edge("log", "response")
-graph.add_edge("doc", "response")
+graph.add_edge("doc", END)               # ← doc 直接结束
 graph.add_edge("response", "escalation")
 graph.add_edge("escalation", END)
 
