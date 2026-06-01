@@ -16,6 +16,7 @@ load_dotenv()
 
 class AgentState(TypedDict):
     message: str
+    history: list 
     intent: str
     analysis: str
     report: str
@@ -36,7 +37,9 @@ response_agent = ResponseAgent(adapter, bus, store)
 escalation_agent = EscalationAgent(adapter, bus, store)
 
 def triage_node(state):
-    msg = Message(sender="user", receiver="triage", type="question", content=state["message"])
+    history_text = "\n".join([f"{m['role']}: {m['content']}" for m in state["history"]])
+    prompt = f"历史对话：\n{history_text}\n\n当前问题：{state['message']}"
+    msg = Message(sender="user", receiver="triage", type="question", content=prompt)
     result = triage_agent.process(msg)
     return {"intent": result}
 

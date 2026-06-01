@@ -2,12 +2,18 @@ import streamlit as st
 from core.graph import app as graph_app
 
 st.title("ADAS 智能运维助手")
+if "history" not in st.session_state:
+    st.session_state.history = []
+
 user_input = st.chat_input("请输入运维问题：")
 
 if user_input:
     st.chat_message("user").write(user_input)
     with st.spinner("正在分析..."):
-        result = graph_app.invoke({"message": user_input})
+        result = graph_app.invoke({
+        "message": user_input,
+        "history": st.session_state.history
+    })
     st.write("### 意图分类")
     st.write(result["intent"])
 
@@ -25,4 +31,8 @@ if user_input:
     if result.get("escalation") == "需要升级":
         st.write("### ⚠️ 升级判断")
         st.write("需要人工介入")
+
+    st.session_state.history.append({"role": "user", "content": user_input})
+    st.session_state.history.append({"role": "assistant", "content": result["analysis"]})
+    
     
