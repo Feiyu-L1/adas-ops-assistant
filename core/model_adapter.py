@@ -35,7 +35,7 @@ class MimoAdapter(ModelAdapter):
                 return completion.choices[0].message.content
             except Exception as e:
                 if attempt < max_retries - 1:
-                    time.sleep(1)  # 等待 1 秒后重试
+                    time.sleep(1)  
                     continue
                 else:
                     return json.dumps({
