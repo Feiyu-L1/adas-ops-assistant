@@ -1,8 +1,16 @@
-from abc import ABC, abstractmethod 
+from abc import ABC, abstractmethod
 import os
 from openai import OpenAI
 import time
 import json
+
+def extract_json(text: str) -> str:
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.split("```", 2)[1]
+        if text.startswith("json"):
+            text = text[4:]
+    return text.strip()
 
 class ModelAdapter(ABC):
 
@@ -11,7 +19,7 @@ class ModelAdapter(ABC):
         pass
 
 class MimoAdapter(ModelAdapter):
-    def __init__(self, api_key, model, base_url="https://token-plan-sgp.xiaomimimo.com/v1"):
+    def __init__(self, api_key, model, base_url="https://token-plan-cn.xiaomimimo.com/v1"):
         self.client = OpenAI(
             api_key = api_key,
             base_url = base_url

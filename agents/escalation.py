@@ -1,4 +1,5 @@
 from agents.base import Agent
+from core.model_adapter import extract_json
 import json
 
 SYSTEM_PROMPT = """你是一个ADAS运维升级判断专家。根据故障报告，判断是否需要人工介入。
@@ -16,12 +17,18 @@ SYSTEM_PROMPT = """你是一个ADAS运维升级判断专家。根据故障报告
     只输出JSON，不要输出其他内容。"""
 
 class EscalationAgent(Agent):
-    def __init__(self, model_adapter, message_bus, store):
-        super().__init__(model_adapter, message_bus, store)
+    def __init__(self, model_adapter, store):
+        super().__init__(model_adapter, store)
     
     def process(self, message):
         prompt = message.content
         result = self.model_adapter.chat(prompt,SYSTEM_PROMPT)
-        data = json.loads(result)
-        return data
+        try:
+            data = json.loads(extract_json(result))
+            return data
+        except json.JSONDecodeError:
+            return {
+                "thinking": "LLM 返回格式错误",
+                "escalation": "不需要升级"
+            }
     

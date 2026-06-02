@@ -1,4 +1,5 @@
 from agents.base import Agent
+from core.model_adapter import extract_json
 import json
 
 SYSTEM_PROMPT = """你是一个ADAS故障报告专家。根据提供的分析信息，生成结构化的故障报告。
@@ -21,14 +22,14 @@ SYSTEM_PROMPT = """你是一个ADAS故障报告专家。根据提供的分析信
     只输出JSON，不要输出其他内容。"""
 
 class ResponseAgent(Agent):
-    def __init__(self, model_adapter, message_bus, store):
-        super().__init__(model_adapter, message_bus, store)
+    def __init__(self, model_adapter, store):
+        super().__init__(model_adapter, store)
     
     def process(self, message):
         prompt = message.content
         result = self.model_adapter.chat(prompt, SYSTEM_PROMPT)
         try:
-            data = json.loads(result)
+            data = json.loads(extract_json(result))
             return data
         except json.JSONDecodeError:
             return {

@@ -4,12 +4,14 @@ from agents.log import LogAgent
 
 def test_log():
     mock_adapter = MagicMock()
-    mock_adapter.chat.return_value = "错误类型：通信中断"
+    mock_adapter.chat.return_value = '{"thinking": "分析日志", "error_type": "通信中断", "time_pattern": "突发", "impact_scope": "摄像头", "severity": "严重", "suggestion": "重启传感器"}'
+
+    mock_store = MagicMock()
+    mock_store.retrieve.return_value = []
 
     agent = LogAgent(
         model_adapter=mock_adapter,
-        message_bus=MagicMock(),
-        store=None
+        store=mock_store
     )
 
     msg = Message(
@@ -21,4 +23,5 @@ def test_log():
 
     result = agent.process(msg)
 
-    assert result =="错误类型：通信中断"
+    assert result["error_type"] == "通信中断"
+    assert result["severity"] == "严重"
