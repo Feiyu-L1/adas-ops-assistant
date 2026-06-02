@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import os
 import requests
 
 class KnowledgeStore(ABC):
@@ -34,6 +35,7 @@ class DifyStore(KnowledgeStore):
         self.api_key = api_key
         self.dataset_id = dataset_id
         self.base_url = "https://api.dify.ai/v1"
+        self.search_method = os.getenv("DIFY_SEARCH_METHOD", "keyword_search")
 
     def store(self, content, doc_type, doc_id, name):
         pass
@@ -49,7 +51,7 @@ class DifyStore(KnowledgeStore):
         data = {
             "query": query,
             "retrieval_model": {
-                "search_method": "keyword_search",
+                "search_method": self.search_method,
                 "reranking_enable": False,
                 "score_threshold_enabled": False,
                 "top_k": 5

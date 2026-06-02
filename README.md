@@ -50,7 +50,13 @@ MIMO_API_KEY=你的 Mimo API Key
 DIFY_API_KEY=你的 Dify API Key
 DIFY_DATASET_ID=你的 Dify 知识库 ID
 USE_DIFY_STORE=true
+DIFY_SEARCH_METHOD=keyword_search
 ```
+
+`DIFY_SEARCH_METHOD` 支持三种值：
+- `keyword_search`：关键词匹配，无需额外配置（默认）
+- `full_text_search`：全文检索，中文效果更好
+- `semantic_search`：语义检索，效果最好，需在 Dify 中配置 Embedding 模型
 
 **4. 配置 Dify 知识库**
 
