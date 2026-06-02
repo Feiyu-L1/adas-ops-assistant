@@ -3,3 +3,6 @@ langgraph
 openai
 python-dotenv
 requests
+
+# 运行测试需要
+pytest
