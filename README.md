@@ -1,97 +1,151 @@
-# ADAS 智能运维助手
+# ADAS Ops Assistant
 
+> An intelligent, multi-agent operations assistant for Advanced Driver Assistance Systems (ADAS), powered by LangGraph and retrieval-augmented generation.
 
-基于多 Agent 架构的 ADAS（高级驾驶辅助系统）智能运维问答助手。用户输入运维问题后，系统自动判断问题类型，调用对应 Agent 进行分析，给出分析结果或文档回答，并标注参考来源。
+---
 
-## 系统架构
+## Overview
+
+ADAS Ops Assistant is an AI-powered Q&A system designed to help engineers diagnose and resolve ADAS operational issues — from sensor anomalies and log analysis to configuration guidance and fault escalation. Users submit a maintenance query in natural language; the system automatically classifies intent, routes to the appropriate agent pipeline, and returns a structured response with cited sources.
+
+The project demonstrates a practical application of agentic LLM architectures in a safety-critical vertical domain, built with a model-agnostic adapter layer for easy backend switching.
+
+---
+
+## Architecture
 
 ```
-用户输入
-   ↓
-TriageAgent（意图分类）
-   ├── 日志异常 / 性能问题 → LogAgent → ResponseAgent → EscalationAgent
-   └── 配置问题 / 常规问题 → DocAgent
+User Input
+    ↓
+TriageAgent  (intent classification)
+    ├── Log anomaly / Performance issue  →  LogAgent  →  ResponseAgent  →  EscalationAgent
+    └── Configuration / General query   →  DocAgent
 ```
 
-整个流程由 LangGraph StateGraph 驱动，知识库由 Dify 提供。
+The entire pipeline is orchestrated by a **LangGraph StateGraph**. Knowledge retrieval is powered by **Dify** (supports keyword, full-text, and semantic search).
 
-## 环境要求
+---
 
-- Python 3.11+
-- Mimo API Key（用于调用 LLM）
-- Dify API Key + Dataset ID（用于知识库检索）
+## Agent Roles
 
-## 安装步骤
+| Agent | Responsibility |
+|---|---|
+| `TriageAgent` | Classifies incoming query intent and routes to the correct pipeline |
+| `LogAgent` | Analyses log patterns and identifies anomalies |
+| `DocAgent` | Retrieves answers from the ADAS knowledge base |
+| `ResponseAgent` | Generates a structured fault report |
+| `EscalationAgent` | Determines whether the issue requires human escalation |
 
-**1. 克隆项目**
+---
+
+## Tech Stack
+
+- **Python 3.11+**
+- **LangGraph** — stateful multi-agent orchestration
+- **Streamlit** — web frontend
+- **Dify** — knowledge base & RAG retrieval
+- Model-agnostic adapter (currently supports Mimo; OpenAI integration in progress)
+
+---
+
+## Getting Started
+
+### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Feiyu-L1/adas-ops-assistant.git
 cd adas-ops-assistant
 ```
 
-**2. 安装依赖**
+### 2. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-**3. 配置环境变量**
-
-复制示例文件并填入你自己的 API Key：
+### 3. Configure environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env`：
+Edit `.env`:
 
-```
-MIMO_API_KEY=你的 Mimo API Key
-DIFY_API_KEY=你的 Dify API Key
-DIFY_DATASET_ID=你的 Dify 知识库 ID
+```env
+MIMO_API_KEY=your_mimo_api_key
+DIFY_API_KEY=your_dify_api_key
+DIFY_DATASET_ID=your_dify_dataset_id
 USE_DIFY_STORE=true
-DIFY_SEARCH_METHOD=keyword_search
+DIFY_SEARCH_METHOD=keyword_search   # keyword_search | full_text_search | semantic_search
 ```
 
-`DIFY_SEARCH_METHOD` 支持三种值：
-- `keyword_search`：关键词匹配，无需额外配置（默认）
-- `full_text_search`：全文检索，中文效果更好
-- `semantic_search`：语义检索，效果最好，需在 Dify 中配置 Embedding 模型
+**Search method options:**
 
-**4. 配置 Dify 知识库**
+| Value | Description |
+|---|---|
+| `keyword_search` | Keyword matching — no extra setup required (default) |
+| `full_text_search` | Full-text search — better for Chinese content |
+| `semantic_search` | Semantic/vector search — best quality, requires an Embedding model configured in Dify |
 
-在 Dify 平台创建一个知识库，上传 ADAS 相关文档（如传感器手册、故障处理规范等），将知识库 ID 填入 `.env` 的 `DIFY_DATASET_ID`。
+### 4. Set up Dify knowledge base
 
-**5. 启动**
+Create a knowledge base in [Dify](https://dify.ai), upload your ADAS documentation (sensor manuals, fault handling specs, etc.), and paste the dataset ID into `.env`.
+
+### 5. Run
 
 ```bash
 streamlit run app.py
 ```
 
-浏览器访问 http://localhost:8501
+Open your browser at `http://localhost:8501`.
 
-## 项目结构
+---
+
+## Running Without Dify
+
+Set `USE_DIFY_STORE=false` in `.env` to use the built-in `MockStore` — a lightweight in-memory store with simple keyword matching. Suitable for local development and testing without external dependencies.
+
+---
+
+## Project Structure
 
 ```
 adas-ops-assistant/
-├── app.py                 # Streamlit 前端
-├── config.py              # 模型与知识库配置
+├── app.py                  # Streamlit frontend
+├── config.py               # Model & knowledge base configuration
 ├── agents/
-│   ├── base.py            # Agent 抽象基类
-│   ├── triage.py          # 意图分类
-│   ├── log.py             # 日志分析
-│   ├── doc.py             # 文档问答
-│   ├── response.py        # 故障报告生成
-│   └── escalation.py      # 升级判断
+│   ├── base.py             # Abstract base class for all agents
+│   ├── triage.py           # Intent classification
+│   ├── log.py              # Log anomaly analysis
+│   ├── doc.py              # Documentation Q&A
+│   ├── response.py         # Fault report generation
+│   └── escalation.py       # Escalation decision logic
 ├── core/
-│   ├── graph.py           # LangGraph 状态机
-│   ├── model_adapter.py   # 模型接口封装
-│   ├── knowledge_store.py # 知识库（Mock / Dify）
-│   └── message.py         # 消息数据结构
-└── tests/                 # 单元测试
+│   ├── graph.py            # LangGraph state machine
+│   ├── model_adapter.py    # LLM provider adapter layer
+│   ├── knowledge_store.py  # Knowledge store (Mock / Dify)
+│   └── message.py          # Message data structures
+└── tests/                  # Unit tests
 ```
 
-## 不使用 Dify 的情况
+---
 
-将 `.env` 中 `USE_DIFY_STORE` 设为 `false`，系统会使用本地 MockStore（内存存储，简单关键词匹配）。适合本地开发调试，知识库为空时模型会告知用户无相关信息。
+## Roadmap
+
+- [ ] OpenAI GPT-4o backend integration
+- [ ] OpenAI Assistants API for persistent conversation threads
+- [ ] Structured benchmarking on ADAS fault diagnosis tasks
+- [ ] Expanded ADAS documentation coverage
+- [ ] Improved multi-turn dialogue handling
+
+---
+
+## Contributing
+
+Issues and pull requests are welcome. If you work in the autonomous vehicle or ADAS domain and have relevant documentation or test cases to contribute, please open an issue to discuss.
+
+---
+
+## License
+
+MIT
